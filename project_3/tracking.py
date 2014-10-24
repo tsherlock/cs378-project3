@@ -19,7 +19,19 @@ def track_ball_1(video):
       a list of (min_x, min_y, max_x, max_y) four-tuples containing the pixel
       coordinates of the rectangular bounding box of the ball in each frame.
     """
-    pass
+    fgbg = cv2.createBackgroundSubtractorMOG()
+    while(1):
+      ret, frame = video.read()
+
+      fgmask = fgbg.apply(frame)
+
+      cv2.imshow('frame',fgmask)
+      k = cv2.waitKey(30) & 0xff
+      if k == 27:
+          break
+
+    video.release()
+    video.destroyAllWindows()
 
 
 def track_ball_2(video):
