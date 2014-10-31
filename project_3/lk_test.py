@@ -11,7 +11,7 @@ while i <= 326:
 	imnames.append(path + "frame_" + s + ".png")
 	i = i + 1
 
-print imnames
+#print imnames
 lkt = lktrack.LKTracker(imnames)
 
 lkt.detect_points()
