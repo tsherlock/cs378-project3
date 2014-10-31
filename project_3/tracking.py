@@ -15,7 +15,7 @@ def findBackground(video):
     i = 1
     n = 100  # Number of frames to use for background estimation
 
-    # Read frames and do a weighted sum
+    # Read each frame and do a weighted sum
     while(i < n):
         i += 1
         _, frame = video.read()
