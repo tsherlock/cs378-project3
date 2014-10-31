@@ -3,13 +3,13 @@ import lktrack
 imnames = []
 
 path = "test_data/ball_4_frames/"
-i = 326
-while i > -1:
+i = 0
+while i <= 326:
 	s = str(i)
 	while len(s) < 3:
 		s = "0" + s
 	imnames.append(path + "frame_" + s + ".png")
-	i = i - 1
+	i = i + 1
 
 print imnames
 lkt = lktrack.LKTracker(imnames)
