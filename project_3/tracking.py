@@ -145,5 +145,29 @@ def track_ball_4(cap):
     cap.release()
 
 def track_face(video):
-    """As track_ball_1, but for face.mov."""
-    pass
+	"""As track_ball_1, but for face.mov."""
+	face_cascade = cv2.CascadeClassifier('frontal_face.xml')
+	prev_face = (0, 0, 0, 0)
+	result = []
+	while(1):
+		_, img = video.read()
+		if img is None:
+			break
+		gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+		faces = face_cascade.detectMultiScale(gray, 1.3, 5, cv2.cv.CV_HAAR_SCALE_IMAGE)
+
+		if len(faces) == 0:
+			faces = [prev_face]
+
+		for (x,y,w,h) in faces:
+			cv2.rectangle(img,(x,y),(x+w,y+h),(255,0,0),2)
+			roi_gray = gray[y:y+h, x:x+w]
+			roi_color = img[y:y+h, x:x+w]
+			result.append((x,y, x+w, y+h))
+
+		prev_face = faces[0]
+		cv2.imshow('img',img)
+		cv2.waitKey(30)
+
+	return result
