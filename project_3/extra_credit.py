@@ -22,7 +22,7 @@ def findBackground(frames):
           A single image representing the estimated background of the video
     """
 
-    n = 100  # Number of frames to use
+    n = 298  # Number of frames to use
     i = 1
     background = frames[0]
     # Read each frame and do a weighted sum
@@ -37,8 +37,8 @@ def findBackground(frames):
         background = cv2.addWeighted(background, alpha, frame, beta, 0.0)
 
     # Comment these lines back in to see result
-    # cv2.imshow('estimated background', background)
-    # cv2.waitKey(3000)
+    cv2.imshow('estimated background', background)
+    cv2.waitKey(3000)
 
     return background
 
@@ -58,12 +58,16 @@ def readFrames(video):
     """
     cv2.namedWindow("input")
     frames = []
-    while 1:
+    i = 0
+    max = video.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT)
+    print "max ", max
+    while i < 1000:
         _, frame = video.read()
         if frame is None:
-            break
+            print "here"
         else:
             frames.append(frame)
+        i += 1
     video.release()
     return frames
 
@@ -71,32 +75,35 @@ def readFrames(video):
 def multi_tracking(video):
     print "starting"
     
-    result = []
-    frames = readFrames(video)
-    print "done reading frames"
+    ret, frame1 = video.read()
+    prvs = cv2.cvtColor(frame1,cv2.COLOR_BGR2GRAY)
+    hsv = np.zeros_like(frame1)
+    hsv[...,1] = 255
 
-    # get background with background estimator method
-    background = findBackground(frames)
-    print "done finding background"
-    
-    # Setup background subtractor object with parameters
-    fgbg = cv2.BackgroundSubtractorMOG(30, 10, 0.7, 0)
-    # Feed estimated background as first input to subtractor
-    fgbg_init = fgbg.apply(background)
-    # Iterate over every frame in video
-    i = 0
-    while i < len(frames):
-        frame = frames[i]  # get the new frame
+    while(1):
+        ret, frame2 = video.read()
+        next = cv2.cvtColor(frame2,cv2.COLOR_BGR2GRAY)
 
-        frame = fgbg.apply(frame)  # apply background subtraction to frame
+        flow = cv2.calcOpticalFlowFarneback(prvs,next, 0.5, 3, 15, 3, 5, 1.2, 0)
 
-        cv2.imshow('frame', frame)
-        cv2.waitKey(30)
+        mag, ang = cv2.cartToPolar(flow[...,0], flow[...,1])
+        hsv[...,0] = ang*180/np.pi/2
+        hsv[...,2] = cv2.normalize(mag,None,0,255,cv2.NORM_MINMAX)
+        rgb = cv2.cvtColor(hsv,cv2.COLOR_HSV2BGR)
+        edges = cv2.Canny(rgb, 100, 200)
+        contours, _ = cv2.findContours(edges, cv2.RETR_TREE,
+                                       cv2.CHAIN_APPROX_SIMPLE)
 
-        i += 1
+        for cnt in contours:
+            x, y, w, h = cv2.boundingRect(cnt)
+            if w*h > 400:
+                cv2.rectangle(frame2, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        
+        cv2.imshow('frame2',frame2)
+        k = cv2.waitKey(30) & 0xff
+        if k == 27:
+            break
+        prvs = next
 
+    video.release()
     cv2.destroyAllWindows()
-    return result
-
-video = cv2.VideoCapture("seq_hotel.avi")
-multi_tracking(video)
