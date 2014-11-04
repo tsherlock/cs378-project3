@@ -19,18 +19,19 @@ def findBackground(frames):
     while(i < n):
         i += 1
         frame = frames[i]
-        beta = 1.0/i
+        beta = 1.0 / i
         alpha = 1.0 - beta
         background = cv2.addWeighted(background, alpha, frame, beta, 0.0)
- 
+
     cv2.imshow('estimated background', background)
     cv2.waitKey(3000)
 
     return background
 
+
 def readFrames(video):
     frames = []
-    while 1: 
+    while 1:
         _, frame = video.read()
 
         if frame is None:
@@ -59,7 +60,6 @@ def track_ball_1(video):
     fgbg = cv2.BackgroundSubtractorMOG(30, 10, 0.7, 0)
     fgbg_init = fgbg.apply(background)
 
-
     i = 0
     while i < len(frames):
         frame = frames[i]
@@ -74,8 +74,8 @@ def track_ball_1(video):
                           reverse=True)
 
         x, y, w, h = cv2.boundingRect(sort_cnt[0])
-        result.append((x, y, x+w, y+h))
-        cv2.rectangle(orig_frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+        result.append((x, y, x + w, y + h))
+        cv2.rectangle(orig_frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
         cv2.imshow('frame', orig_frame)
         cv2.waitKey(30)
@@ -105,10 +105,9 @@ def track_ball_4(video):
         frame = frames[i]
 
         orig_frame = frame
-        
-        img = cv2.imread('test_data/ball_4_frames/frame_131.png', 0) #change to grayscale param
-        edges = cv2.Canny(frame,700,800)
-        
+
+        edges = cv2.Canny(frame, 700, 800)
+
         contours, _ = cv2.findContours(edges, cv2.RETR_TREE,
                                        cv2.CHAIN_APPROX_SIMPLE)
 
@@ -116,8 +115,8 @@ def track_ball_4(video):
                           reverse=True)
 
         x, y, w, h = cv2.boundingRect(sort_cnt[0])
-        result.append((x, y, x+w, y+h))
-        cv2.rectangle(orig_frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+        result.append((x, y, x + w, y + h))
+        cv2.rectangle(orig_frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
         cv2.imshow("ball", orig_frame)
         cv2.waitKey(30)
@@ -127,30 +126,34 @@ def track_ball_4(video):
     cv2.destroyAllWindows()
     return result
 
+
 def track_face(video):
-	"""As track_ball_1, but for face.mov."""
-	face_cascade = cv2.CascadeClassifier('frontal_face.xml')
-	prev_face = (0, 0, 0, 0)
-	result = []
-	while(1):
-		_, img = video.read()
-		if img is None:
-			break
-		gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    """As track_ball_1, but for face.mov."""
 
-		faces = face_cascade.detectMultiScale(gray, 1.3, 5, cv2.cv.CV_HAAR_SCALE_IMAGE)
+    face_cascade = cv2.CascadeClassifier('frontal_face.xml')
+    prev_face = (0, 0, 0, 0)
+    result = []
 
-		if len(faces) == 0:
-			faces = [prev_face]
+    while(1):
+        _, img = video.read()
+        if img is None:
+            break
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-		for (x,y,w,h) in faces:
-			cv2.rectangle(img,(x,y),(x+w,y+h),(255,0,0),2)
-			roi_gray = gray[y:y+h, x:x+w]
-			roi_color = img[y:y+h, x:x+w]
-			result.append((x,y, x+w, y+h))
+        faces = face_cascade.detectMultiScale(gray, 1.3, 5,
+                                              cv2.cv.CV_HAAR_SCALE_IMAGE)
 
-		prev_face = faces[0]
-		cv2.imshow('img',img)
-		cv2.waitKey(30)
+        if len(faces) == 0:
+            faces = [prev_face]
 
-	return result
+        for (x, y, w, h) in faces:
+            cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 2)
+            roi_gray = gray[y: y + h, x: x + w]
+            roi_color = img[y: y + h, x: x + w]
+            result.append((x, y, x + w, y + h))
+
+            prev_face = faces[0]
+            cv2.imshow('img', img)
+            cv2.waitKey(30)
+
+    return result
