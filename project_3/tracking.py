@@ -4,7 +4,6 @@ In this project, you'll track objects in videos.
 """
 
 import cv2
-import math
 import numpy as np
 
 
