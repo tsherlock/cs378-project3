@@ -200,8 +200,7 @@ def track_face(video):
             faces = [prev_face]
 
         # Sort faces by width of bounding box in reverse order
-        sort_face = sorted(faces, key=lambda x: x[2],
-                          reverse=True)
+        sort_face = sorted(faces, key=lambda x: x[2], reverse=True)
 
         # Get bounding box of largest face, assumes smaller ones are
         # false positives.
