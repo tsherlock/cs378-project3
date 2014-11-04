@@ -56,10 +56,10 @@ def readFrames(video):
         Outputs:
           A list of all the frames in consecutive order from the video
     """
+    cv2.namedWindow("input")
     frames = []
     while 1:
         _, frame = video.read()
-
         if frame is None:
             break
         else:
@@ -70,16 +70,19 @@ def readFrames(video):
 
 def multi_tracking(video):
     print "starting"
+    
     result = []
     frames = readFrames(video)
+    print "done reading frames"
 
     # get background with background estimator method
     background = findBackground(frames)
+    print "done finding background"
+    
     # Setup background subtractor object with parameters
     fgbg = cv2.BackgroundSubtractorMOG(30, 10, 0.7, 0)
     # Feed estimated background as first input to subtractor
     fgbg_init = fgbg.apply(background)
-    print "something"
     # Iterate over every frame in video
     i = 0
     while i < len(frames):
@@ -95,3 +98,5 @@ def multi_tracking(video):
     cv2.destroyAllWindows()
     return result
 
+video = cv2.VideoCapture("seq_hotel.avi")
+multi_tracking(video)
