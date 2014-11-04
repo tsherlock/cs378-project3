@@ -8,9 +8,9 @@ import math
 import numpy as np
 
 
-def findBackground(video):
+def findBackground(frames):
 
-    _, background = video.read()
+    background = frames[0]
 
     i = 1
     n = 100  # Number of frames to use for background estimation
@@ -18,18 +18,27 @@ def findBackground(video):
     # Read each frame and do a weighted sum
     while(i < n):
         i += 1
-        _, frame = video.read()
+        frame = frames[i]
         beta = 1.0/i
         alpha = 1.0 - beta
         background = cv2.addWeighted(background, alpha, frame, beta, 0.0)
-
-    # reset video capture to first frame
-    video.set(cv2.cv.CV_CAP_PROP_POS_FRAMES, 0)
-
+ 
     cv2.imshow('estimated background', background)
     cv2.waitKey(3000)
 
     return background
+
+def readFrames(video):
+    frames = []
+    while 1: 
+        _, frame = video.read()
+
+        if frame is None:
+            break
+        else:
+            frames.append(frame)
+    video.release()
+    return frames
 
 
 def track_ball_1(video):
@@ -45,15 +54,16 @@ def track_ball_1(video):
     """
 
     result = []
+    frames = readFrames(video)
 
-    background = findBackground(video)
+    background = findBackground(frames)
     fgbg = cv2.BackgroundSubtractorMOG(30, 10, 0.7, 0)
     fgbg_init = fgbg.apply(background)
 
-    while(1):
-        _, frame = video.read()
-        if frame is None:
-            break
+
+    i = 0
+    while i < len(frames):
+        frame = frames[i]
 
         orig_frame = frame
         frame = fgbg.apply(frame)
@@ -70,6 +80,8 @@ def track_ball_1(video):
 
         cv2.imshow('frame', orig_frame)
         cv2.waitKey(30)
+
+        i += 1
 
     cv2.destroyAllWindows()
     return result

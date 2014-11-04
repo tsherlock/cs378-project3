@@ -48,32 +48,32 @@ class TestTracking(unittest.TestCase):
             tracking_diff, len(expected_bounds))
         return tracking_diff
 
-    # def track_ball_with_function_(self, video_filename, tracking_function):
-    #     """Tracks the ball in 'video_filename' with 'tracking_function'."""
-    #     video = cv2.VideoCapture(video_filename)
-    #     bounds = tracking_function(video)
-    #     bounds_diff = self._tracking_bounds_diff(self.ball_bounds, bounds)
-    #     self.assertLessEqual(bounds_diff, self.max_ball_diff)
+    def track_ball_with_function_(self, video_filename, tracking_function):
+        """Tracks the ball in 'video_filename' with 'tracking_function'."""
+        video = cv2.VideoCapture(video_filename)
+        bounds = tracking_function(video)
+        bounds_diff = self._tracking_bounds_diff(self.ball_bounds, bounds)
+        self.assertLessEqual(bounds_diff, self.max_ball_diff)
 
-    # def test_track_ball_1(self):
-    #     """Tests that the ball in ball_1.mov is correctly tracked."""
-    #     self.track_ball_with_function_(
-    #         "test_data/ball_1_frames/frame_%03d.png", tracking.track_ball_1)
+    def test_track_ball_1(self):
+        """Tests that the ball in ball_1.mov is correctly tracked."""
+        self.track_ball_with_function_(
+            "test_data/ball_1_frames/frame_%03d.png", tracking.track_ball_1)
 
-    # def test_track_ball_2(self):
-    #     """Tests that the ball in ball_2.mov is correctly tracked."""
-    #     self.track_ball_with_function_(
-    #         "test_data/ball_2_frames/frame_%03d.png", tracking.track_ball_2)
+    def test_track_ball_2(self):
+        """Tests that the ball in ball_2.mov is correctly tracked."""
+        self.track_ball_with_function_(
+            "test_data/ball_2_frames/frame_%03d.png", tracking.track_ball_2)
 
-    # def test_track_ball_3(self):
-    #     """Tests that the ball in ball_3.mov is correctly tracked."""
-    #     self.track_ball_with_function_(
-    #         "test_data/ball_3_frames/frame_%03d.png", tracking.track_ball_3)
+    def test_track_ball_3(self):
+        """Tests that the ball in ball_3.mov is correctly tracked."""
+        self.track_ball_with_function_(
+            "test_data/ball_3_frames/frame_%03d.png", tracking.track_ball_3)
 
-    # def test_track_ball_4(self):
-    #     """Tests that the ball in ball_4.mov is correctly tracked."""
-    #     self.track_ball_with_function_(
-    #         "test_data/ball_4_frames/frame_%03d.png", tracking.track_ball_4)
+    def test_track_ball_4(self):
+        """Tests that the ball in ball_4.mov is correctly tracked."""
+        self.track_ball_with_function_(
+            "test_data/ball_4_frames/frame_%03d.png", tracking.track_ball_4)
 
     def test_track_face(self):
         """Tests that the face in face.mov is correctly tracked."""
