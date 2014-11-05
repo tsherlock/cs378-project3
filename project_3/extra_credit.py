@@ -75,11 +75,8 @@ def readFrames(video):
 def multi_tracking(video):
     print "starting"
     
-    for x in xrange(0,500):
-        video.read()
-    
     ret, frame1 = video.read()
-    prvs = cv2.cvtColor(frame1,cv2.COLOR_BGR2GRAY)
+    prvs = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)
     hsv = np.zeros_like(frame1)
     hsv[...,1] = 255
     
@@ -88,16 +85,16 @@ def multi_tracking(video):
 
     while(1):
         ret, frame2 = video.read()
-        next = cv2.cvtColor(frame2,cv2.COLOR_BGR2GRAY)
+        next = cv2.cvtColor(frame2, cv2.COLOR_BGR2GRAY)
 
-        flow = cv2.calcOpticalFlowFarneback(prvs,next, 0.5, 3, 15, 3, 5, 1.2, 0)
-
-        mag, ang = cv2.cartToPolar(flow[...,0], flow[...,1])
-        hsv[...,0] = ang*180/np.pi/2
-        hsv[...,2] = cv2.normalize(mag,None,0,255,cv2.NORM_MINMAX)
-        rgb = cv2.cvtColor(hsv,cv2.COLOR_HSV2BGR)
-        edges = cv2.Canny(rgb, 100, 200) #300 350
+        flow = cv2.calcOpticalFlowFarneback(prvs, next,
+                                            0.5, 3, 15, 3, 5, 1.2, 0)
         
+        mag, ang = cv2.cartToPolar(flow[..., 0], flow[..., 1])
+        hsv[..., 0] = ang * 180 / np.pi / 2
+        hsv[..., 2] = cv2.normalize(mag, None, 0, 255, cv2.NORM_MINMAX)
+        rgb = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+        edges = cv2.Canny(rgb, 150, 200)
         contours, _ = cv2.findContours(edges, cv2.RETR_TREE,
                                        cv2.CHAIN_APPROX_SIMPLE)
         
