@@ -74,12 +74,12 @@ def readFrames(video):
 
 def multi_tracking(video):
     print "starting"
-    
+
     ret, frame1 = video.read()
     prvs = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)
     hsv = np.zeros_like(frame1)
-    hsv[...,1] = 255
-    
+    hsv[..., 1] = 255
+
     prev_objects = []
     tolerance = 50
 
@@ -89,7 +89,7 @@ def multi_tracking(video):
 
         flow = cv2.calcOpticalFlowFarneback(prvs, next,
                                             0.5, 3, 15, 3, 5, 1.2, 0)
-        
+
         mag, ang = cv2.cartToPolar(flow[..., 0], flow[..., 1])
         hsv[..., 0] = ang * 180 / np.pi / 2
         hsv[..., 2] = cv2.normalize(mag, None, 0, 255, cv2.NORM_MINMAX)
@@ -97,29 +97,34 @@ def multi_tracking(video):
         edges = cv2.Canny(rgb, 150, 200)
         contours, _ = cv2.findContours(edges, cv2.RETR_TREE,
                                        cv2.CHAIN_APPROX_SIMPLE)
-        
+
         new_prev_objects = []
         for cnt in contours:
             x, y, w, h = cv2.boundingRect(cnt)
             found_obj = False
-            
+
             if w*h > 400:
                 for new_prev_obj in new_prev_objects:
-                    if abs(x - new_prev_obj[0]) < tolerance and abs(y - new_prev_obj[1]) < tolerance:
+                    if (abs(x - new_prev_obj[0]) < tolerance and
+                            abs(y - new_prev_obj[1]) < tolerance):
                         found_obj = True
                         break
                 if not found_obj:
-                    new_prev_objects.append((x,y))
-            
+                    new_prev_objects.append((x, y))
+
             contains = False
             if not found_obj:
                 for prev_object in prev_objects:
-                    if abs(x - prev_object[0]) < tolerance and abs(y - prev_object[1]) < tolerance:
+                    if (abs(x - prev_object[0]) < tolerance and
+                            abs(y - prev_object[1]) < tolerance):
                         if w*h > 400:
-                            cv2.rectangle(frame2, (x, y), (x + w, y + h), (0, 255, 0), 2)
-        prev_objects = new_prev_objects 
-        cv2.imshow('frame2',frame2)
-        #cv2.imshow('frame2',edges)
+                            cv2.rectangle(frame2,
+                                          (x, y),
+                                          (x + w, y + h),
+                                          (0, 255, 0), 2)
+        prev_objects = new_prev_objects
+        cv2.imshow('frame2', frame2)
+
         k = cv2.waitKey(1) & 0xff
         if k == 27:
             break
