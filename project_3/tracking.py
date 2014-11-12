@@ -6,6 +6,8 @@ In this project, you'll track objects in videos.
 import cv2
 import numpy as np
 
+VISUALIZE = False  # flag to see results of functions using imshow.
+
 
 def findBackground(frames):
     """ Reads n number of frames and uses a weighted average
@@ -32,9 +34,10 @@ def findBackground(frames):
         alpha = 1.0 - beta
         background = cv2.addWeighted(background, alpha, frame, beta, 0.0)
 
-    # Comment these lines back in to see result
-    # cv2.imshow('estimated background', background)
-    # cv2.waitKey(3000)
+    if VISUALIZE:
+        cv2.imshow('estimated background', background)
+        cv2.waitKey(3000)
+        cv2.destroyAllWindows()
 
     return background
 
@@ -53,7 +56,7 @@ def readFrames(video):
           A list of all the frames in consecutive order from the video
     """
     frames = []
-    while 1:
+    while True:
         _, frame = video.read()
 
         if frame is None:
@@ -64,16 +67,10 @@ def readFrames(video):
     return frames
 
 
-def track_ball_1(video):
-    """Track the ball's center in 'video'.
-
-    Arguments:
-      video: an open cv2.VideoCapture object containing a video of a ball
-        to be tracked.
-
-    Outputs:
-      a list of (min_x, min_y, max_x, max_y) four-tuples containing the pixel
-      coordinates of the rectangular bounding box of the ball in each frame.
+def track_ball_generic(video):
+    """
+    Function that uses background subtraction and contour finding
+    to track an object in a video capture.
     """
     result = []
     frames = readFrames(video)
@@ -81,16 +78,17 @@ def track_ball_1(video):
     # get background with background estimator method
     background = findBackground(frames)
     # Setup background subtractor object with parameters
-    fgbg = cv2.BackgroundSubtractorMOG(30, 10, 0.7, 0)
+    subtractor = cv2.BackgroundSubtractorMOG(30, 10, 0.7, 0)
     # Feed estimated background as first input to subtractor
-    fgbg_init = fgbg.apply(background)
+    subtractor.apply(background)
 
     # Iterate over every frame in video
     i = 0
     while i < len(frames):
         frame = frames[i]  # get the new frame
 
-        frame = fgbg.apply(frame)  # apply background subtraction to frame
+        # apply background subtraction to frame
+        frame = subtractor.apply(frame)
 
         # find contours in the frame
         contours, _ = cv2.findContours(frame, cv2.RETR_TREE,
@@ -106,30 +104,49 @@ def track_ball_1(video):
         # append to result list
         result.append((x, y, x + w, y + h))
 
-        # Comment these lines back in to see result with bounding box
-        # orig_frame = frames[i]
-        # cv2.rectangle(orig_frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-        # cv2.imshow('frame', orig_frame)
-        # cv2.waitKey(30)
+        if VISUALIZE:
+            orig_frame = frames[i]
+            cv2.rectangle(orig_frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            cv2.imshow('frame', orig_frame)
+            cv2.waitKey(30)
 
         i += 1
 
-    cv2.destroyAllWindows()
     return result
+
+
+def track_ball_1(video):
+    """Track the ball's center in 'video'.
+
+    Arguments:
+      video: an open cv2.VideoCapture object containing a video of a ball
+        to be tracked.
+
+    Outputs:
+      a list of (min_x, min_y, max_x, max_y) four-tuples containing the pixel
+      coordinates of the rectangular bounding box of the ball in each frame.
+    """
+    return track_ball_generic(video)
 
 
 def track_ball_2(video):
     """As track_ball_1, but for ball_2.mov."""
-    return track_ball_1(video)
+    return track_ball_generic(video)
 
 
 def track_ball_3(video):
     """As track_ball_1, but for ball_3.mov."""
-    return track_ball_1(video)
+    return track_ball_generic(video)
 
 
 def track_ball_4(video):
-    """As track_ball_1, but for ball_4.mov."""
+    """
+    As track_ball_1, but for ball_4.mov.
+
+    Uses edge detection and contour finding to track the ball in a
+    moving background. Edge detection parameters track tuned to find only
+    the edges of the ball.
+    """
 
     result = []
     frames = readFrames(video)
@@ -156,20 +173,27 @@ def track_ball_4(video):
         # append to result list
         result.append((x, y, x + w, y + h))
 
-        # Comment these lines back in to see result with bounding box
-        # orig_frame = frame[i]
-        # cv2.rectangle(orig_frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-        # cv2.imshow("ball", orig_frame)
-        # cv2.waitKey(30)
+        if VISUALIZE:
+            orig_frame = frames[i]
+            cv2.rectangle(orig_frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            cv2.imshow("ball", orig_frame)
+            cv2.waitKey(30)
 
         i += 1
 
-    cv2.destroyAllWindows()
     return result
 
 
 def track_face(video):
-    """As track_ball_1, but for face.mov."""
+    """
+    As track_ball_1, but for face.mov.
+
+    Uses Haar Cascade Face Detector to track a face in a video.
+    Assumes there is only one face. Parameters are set to have
+    high confidence that what is actually is found is a face. If it
+    cant find a face for any reason, uses location of face in previous
+    frame.
+    """
 
     # Get the cascade classifier with pre-trained classifiers
     face_cascade = cv2.CascadeClassifier('frontal_face.xml')
@@ -179,7 +203,7 @@ def track_face(video):
     result = []
 
     # Loop until frame from video capture returns None
-    while(1):
+    while True:
         _, img = video.read()
         if img is None:
             break
@@ -210,11 +234,11 @@ def track_face(video):
         # set previous face
         prev_face = faces[0]
 
-        # Uncomment these lines to see results
-        # cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 2)
-        # roi_gray = gray[y: y + h, x: x + w]
-        # roi_color = img[y: y + h, x: x + w]
-        # cv2.imshow('img', img)
-        # cv2.waitKey(30)
+        if VISUALIZE:
+            cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 2)
+            roi_gray = gray[y: y + h, x: x + w]
+            roi_color = img[y: y + h, x: x + w]
+            cv2.imshow('img', img)
+            cv2.waitKey(30)
 
     return result
